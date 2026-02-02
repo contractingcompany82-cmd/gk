@@ -1,38 +1,40 @@
+import streamlit as st
 import google.generativeai as genai
-import sys
+
+# Page Title
+st.set_page_config(page_title="AI GK Guru", page_icon="🤖")
+st.title("🤖 AI GK Guru (Hindi)")
 
 # 1. API Setup
-API_KEY = "YOUR_API_KEY_HERE"  # <--- Apna real API key yahan dalein
-genai.configure(api_key=API_KEY)
+# Best practice: API Key ko sidebar mein ya secrets mein rakhein
+api_key = st.sidebar.text_input("Apni Gemini API Key Dalein:", type="password")
 
-# 2. Model Selection (2026 Latest)
-# Agar ye error de, toh 'gemini-2.5-flash' try karein
-MODEL_NAME = 'gemini-3-flash' 
-
-print(f"--- AI GK Bot Start Ho Raha Hai (Model: {MODEL_NAME}) ---")
-
-try:
-    model = genai.GenerativeModel(MODEL_NAME)
+if api_key:
+    genai.configure(api_key=api_key)
     
-    # Input prompt
-    topic = input("Aap kis topic ke baare mein jaanna chahte hain? (Type karke Enter dabayein): ")
-    
-    if not topic:
-        print("Bhai, kuch topic toh likho!")
-        sys.exit()
+    # 2. Topic Input
+    topic = st.text_input("Kis topic par GK chahiye?", placeholder="e.g. Space, India, Cricket")
 
-    print(f"\nSawaal: {topic} ke baare mein soch raha hoon... thoda rukiye...")
+    if st.button("GK Batao!"):
+        if topic:
+            try:
+                with st.spinner('AI soch raha hai...'):
+                    # Yahan hum sabse stable model use kar rahe hain
+                    model = genai.GenerativeModel('gemini-1.5-flash') 
+                    # Note: Agar 1.5-flash abhi bhi 404 de, toh yahan 'gemini-2.0-flash' likh dein.
+                    
+                    response = model.generate_content(f"Give me an amazing GK fact about {topic} in Hindi.")
+                    
+                    st.success("Done!")
+                    st.subheader(f"Fact about {topic}:")
+                    st.write(response.text)
+            except Exception as e:
+                st.error(f"Ek error aaya: {e}")
+        else:
+            st.warning("Pehle koi topic toh likho bhai!")
+else:
+    st.info("Side mein apni API Key daalein shuru karne ke liye.")
 
-    # Response generation
-    response = model.generate_content(f"Give me an amazing GK fact about {topic} in Hindi.")
-    
-    print("-" * 30)
-    print("YE RAHA RESULT:")
-    print(response.text)
-    print("-" * 30)
-
-except Exception as e:
-    print(f"\n[ERROR]: Kuch gadbad ho gayi!")
-    print(f"Details: {e}")
-
-input("\nProgram band karne ke liye Enter dabayein...")
+# Footer
+st.markdown("---")
+st.caption("Powered by Gemini AI | 2026 Edition")
