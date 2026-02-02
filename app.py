@@ -1,65 +1,21 @@
-import streamlit as st
 import google.generativeai as genai
 
-# --- PAGE CONFIG ---
-st.set_page_config(page_title="GK AI Guru", page_icon="🎓")
+# Apna API Key yahan dalein
+genai.configure(api_key="YOUR_API_KEY")
 
-# --- UI STYLING ---
-st.markdown("""
-    <style>
-    .main { background-color: #f5f7f9; }
-    .stTextInput { border-radius: 20px; }
-    </style>
-    """, unsafe_allow_html=True)
+# Model ko update kiya gaya hai (1.5 se 2.5 ya 3-flash par)
+model = genai.GenerativeModel('gemini-2.5-flash')
 
-# --- API KEY SETUP ---
-# Aap sidebar mein key daal sakte hain ya code mein fix kar sakte hain
-with st.sidebar:
-    st.title("⚙️ AI Control Room")
-    api_key = st.text_input("Enter Gemini API Key", type="password")
-    st.info("Key yahan se lein: https://aistudio.google.com/app/apikey")
+def get_gk_fact(topic):
+    prompt = f"Give me an interesting GK fact about {topic} in Hindi."
     
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.messages = []
-        st.rerun()
+    try:
+        response = model.generate_content(prompt)
+        print(f"GK Fact: {response.text}")
+    except Exception as e:
+        print(f"Oops! Ek error aaya: {e}")
+        print("Tip: 'genai.list_models()' chala kar check karein ki aapke paas kaunsa model available hai.")
 
-# --- INITIALIZE AI ---
-if api_key:
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-else:
-    st.warning("Bhai, pehle Sidebar mein API Key daalo!")
-    st.stop()
-
-# --- CHAT INTERFACE ---
-st.title("🎓 GK AI Guru")
-st.caption("Main General Knowledge ka expert hoon. Kuch bhi puchein!")
-
-# Session State for History
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display Messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# User Input
-if prompt := st.chat_input("Duniya ka sabse uncha pahad kaunsa hai?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # AI Response
-    with st.chat_message("assistant"):
-        with st.spinner("Soch raha hoon..."):
-            try:
-                # System Instruction for GK focus
-                full_prompt = f"You are a GK Expert. Answer in short and clear points. Question: {prompt}"
-                response = model.generate_content(full_prompt)
-                answer = response.text
-                
-                st.markdown(answer)
-                st.session_state.messages.append({"role": "assistant", "content": answer})
-            except Exception as e:
-                st.error(f"Error: {e}")
+# Test karein
+topic = input("Kis topic par GK chahiye? ")
+get_gk_fact(topic)
