@@ -1,21 +1,38 @@
 import google.generativeai as genai
+import sys
 
-# Apna API Key yahan dalein
-genai.configure(api_key="YOUR_API_KEY")
+# 1. API Setup
+API_KEY = "YOUR_API_KEY_HERE"  # <--- Apna real API key yahan dalein
+genai.configure(api_key=API_KEY)
 
-# Model ko update kiya gaya hai (1.5 se 2.5 ya 3-flash par)
-model = genai.GenerativeModel('gemini-2.5-flash')
+# 2. Model Selection (2026 Latest)
+# Agar ye error de, toh 'gemini-2.5-flash' try karein
+MODEL_NAME = 'gemini-3-flash' 
 
-def get_gk_fact(topic):
-    prompt = f"Give me an interesting GK fact about {topic} in Hindi."
+print(f"--- AI GK Bot Start Ho Raha Hai (Model: {MODEL_NAME}) ---")
+
+try:
+    model = genai.GenerativeModel(MODEL_NAME)
     
-    try:
-        response = model.generate_content(prompt)
-        print(f"GK Fact: {response.text}")
-    except Exception as e:
-        print(f"Oops! Ek error aaya: {e}")
-        print("Tip: 'genai.list_models()' chala kar check karein ki aapke paas kaunsa model available hai.")
+    # Input prompt
+    topic = input("Aap kis topic ke baare mein jaanna chahte hain? (Type karke Enter dabayein): ")
+    
+    if not topic:
+        print("Bhai, kuch topic toh likho!")
+        sys.exit()
 
-# Test karein
-topic = input("Kis topic par GK chahiye? ")
-get_gk_fact(topic)
+    print(f"\nSawaal: {topic} ke baare mein soch raha hoon... thoda rukiye...")
+
+    # Response generation
+    response = model.generate_content(f"Give me an amazing GK fact about {topic} in Hindi.")
+    
+    print("-" * 30)
+    print("YE RAHA RESULT:")
+    print(response.text)
+    print("-" * 30)
+
+except Exception as e:
+    print(f"\n[ERROR]: Kuch gadbad ho gayi!")
+    print(f"Details: {e}")
+
+input("\nProgram band karne ke liye Enter dabayein...")
