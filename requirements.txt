@@ -1,3 +1,4 @@
+plotly
 pip
 streamlit
 google-generativeai
